@@ -1,10 +1,10 @@
 app:
   name: jenkins
-  namespace: jenkins
+  namespace: jenkins-ci
 
 image:
   repository: jenkins/jenkins
-  tag: lts
+  tag: "2.443-jdk21"
   digest: ""
   pullPolicy: Always
 
@@ -34,19 +34,19 @@ server:
 
   labels: {}
 
-  # tolerations:
-  #   - key: "jenkins-node"
-  #     operator: Equal
-  #     value: "true"
-  #     effect: NoSchedule
+  tolerations:
+    - key: jenkins
+      operator: Equal
+      value: "true"
+      effect: NoSchedule
 
-  # nodeSelector:
-  #   designation: jenkins-ci
+  nodeSelector:
+     cloud.google.com/gke-nodepool: "jenkins-test"
 
   persistentVolume:
     enabled: true
 
-    storageClass: ""
+    storageClass: "standard"
 
     accessMode:     
       - ReadWriteOnce

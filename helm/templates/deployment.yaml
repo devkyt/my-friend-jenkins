@@ -16,12 +16,13 @@ spec:
       {{- include "jenkins.server.selectorLabels" . | indent 8 }}
     spec:
       securityContext:
-            fsGroup: 1000
-            runAsUser: 1000
+          fsGroup: 1000
+          runAsUser: 1000
       serviceAccountName: {{ include "jenkins.serviceAccountName" . }}
       containers:
         - name: {{ template "jenkins.name" . }}
           image: {{ template "jenkins.getImage" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" | quote }}
           {{- with .Values.server.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
