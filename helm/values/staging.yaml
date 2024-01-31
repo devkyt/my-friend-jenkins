@@ -1,0 +1,70 @@
+app:
+  name: jenkins
+  namespace: jenkins
+
+image:
+  repository: jenkins/jenkins
+  tag: lts
+  digest: ""
+  pullPolicy: Always
+
+rbac:
+  serviceAccountName: jenkins-admin
+  rules: 
+    - apiGroups: [""]
+      resources: ["*"]
+      verbs: ["*"]
+
+server:
+  local: true
+
+  replicaCount: 1
+
+  securityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+
+  resources:
+    limits: 
+      memory: "2Gi"
+      cpu: "1000m"
+    requests:
+      memory: "1Gi"
+      cpu: "1000m"
+
+  labels: {}
+
+  # tolerations:
+  #   - key: "jenkins-node"
+  #     operator: Equal
+  #     value: "true"
+  #     effect: NoSchedule
+
+  # nodeSelector:
+  #   designation: jenkins-ci
+
+  persistentVolume:
+    enabled: true
+
+    storageClass: ""
+
+    accessMode:     
+      - ReadWriteOnce
+
+    storageSize: "5Gi"
+
+    labels: {}
+    annotations: {}
+
+    # existingClaim: ""
+    # existingVolume: ""
+
+    selector: {}
+
+  service: 
+    type: NodePort
+
+    port: 8080
+    nodePort: 32000
+
+

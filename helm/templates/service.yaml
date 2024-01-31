@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "jenkins.service" . }}
+  namespace: {{ template "jenkins.namespace" . }}
+  annotations:
+      prometheus.io/scrape: 'true'
+      prometheus.io/path:   /
+      prometheus.io/port:   '8080'
+  labels:
+    {{- include "jenkins.commonLabels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "jenkins.server.selectorLabels" . | indent 6 }}
+  type: {{ .Values.server.service.type | quote }}
+  ports:
+    - port: {{ .Values.server.service.port | default 8080 }}
+      targetPort: 8080
+      {{- if eq .Values.server.service.type "NodePort" }}
+      nodePort: {{ .Values.server.service.nodePort | default 32000 }}
+      {{- end }}

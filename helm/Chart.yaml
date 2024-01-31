@@ -1,0 +1,12 @@
+apiVersion: v2
+name: jenkins
+description: Jenkins Helm chart for Kubernetes
+version: 0.1.0
+appVersion: 0.1.0
+keywords:
+  - jenkins
+  - pipelines
+  - ci/cd
+maintainers:
+  - name: Kyrylo Tykhanskyi
+    email: ktykhanskyi@gmail.com

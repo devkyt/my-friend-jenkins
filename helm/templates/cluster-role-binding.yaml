@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "jenkins.clusterRoleBinding" . }}
+  labels:
+    {{- include "jenkins.commonLabels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "jenkins.clusterRole" . }}
+subjects:
+- kind: ServiceAccount
+  name:  {{ template "jenkins.serviceAccountName" . }}
+  namespace: {{ template "jenkins.namespace" . }}
+
