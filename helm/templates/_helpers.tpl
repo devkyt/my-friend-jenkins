@@ -1,15 +1,27 @@
 {{- define "jenkins.name" -}}
-{{ .Values.app.name | default "jenkins" | quote }}
+{{ .Values.app.name | default "jenkins" }}
 {{- end -}}
+
 
 {{- define "jenkins.namespace" -}}
 {{ .Values.app.namespace | default "jenkins-ci" | quote }}
 {{- end -}}
 
 
+{{- define "jenkins.commonAnnotations" -}}
+deployed: {{ now | date "2024-02-01" }}
+app.kubernetes.io/name: {{ include "jenkins.name" . | quote }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Chart.AppVersion }}
+{{- with .Values.server.annotations }}
+{{- toYaml . }}
+{{- end -}}
+{{- end -}}
+
+
 {{- define "jenkins.commonLabels" -}}
 helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-app.kubernetes.io/name: {{ .Values.app.name }}
+app.kubernetes.io/name: {{ include "jenkins.name" . | quote }}
 app.kubernetes.io/version: {{ .Chart.AppVersion }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/instance: {{ .Release.Name }}
@@ -20,7 +32,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- with .Values.server.labels }}
 {{- toYaml . }}
 {{- end }}
-app: jenkins-server
+app: {{ include "jenkins.name" . | quote }}
 {{- end -}}
 
 
@@ -33,8 +45,18 @@ app: jenkins-server
 {{- end -}}
 
 
-{{- define "jenkins.service" -}}
-{{ .Values.server.service.name | default "jenkins-service" | quote }}
+{{- define "jenkins.ui-service" -}}
+{{- if .Values.server.service.name -}}
+{{ .Values.server.service.name }}
+{{ else }}
+{{- printf "%s-ui" (include "jenkins.name" . ) | quote }}
+{{- end -}}
+{{- end -}}
+
+
+{{- define "jenkins.master-service" -}}
+{{ $service := ternary (.Values.server.service.name) (include "jenkins.name" .) false }}
+{{- printf "%s-master" $service | quote }}
 {{- end -}}
 
 
@@ -51,6 +73,7 @@ app: jenkins-server
 {{- define "jenkins.clusterRoleBinding" -}}
 {{ include "jenkins.serviceAccountName" . }}
 {{- end -}}
+
 
 {{- define "jenkins.claim" -}}
 {{ .Values.server.persistentVolume.name | default "jenkins-claim" | quote }}

@@ -33,6 +33,7 @@ server:
       cpu: "1000m"
 
   labels: {}
+  annotations: {}
 
   tolerations:
     - key: jenkins
@@ -41,7 +42,7 @@ server:
       effect: NoSchedule
 
   nodeSelector:
-     cloud.google.com/gke-nodepool: "jenkins-test"
+     cloud.google.com/gke-nodepool: "jenkins-pool"
 
   persistentVolume:
     enabled: true
@@ -63,7 +64,6 @@ server:
 
   service: 
     type: NodePort
-
     port: 8080
     nodePort: 32000
 

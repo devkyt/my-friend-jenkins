@@ -5,6 +5,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ template "jenkins.claim" . }}
   namespace: {{ template "jenkins.namespace" . }}
+  annotations: 
+    {{- include "jenkins.commonAnnotations" . | nindent 4 }}
   labels:
     {{- include "jenkins.commonLabels" . | nindent 4 }}
     {{- with.Values.server.persistentVolume.labels }}

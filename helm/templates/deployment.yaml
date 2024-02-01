@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: {{ template "jenkins.name" . }}
   namespace: {{ template "jenkins.namespace" . }}
+  annotations: 
+    {{- include "jenkins.commonAnnotations" . | nindent 4 }}
   labels:
     {{- include "jenkins.commonLabels" . | nindent 4 }}
 spec:

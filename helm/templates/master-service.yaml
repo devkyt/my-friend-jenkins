@@ -1,9 +1,16 @@
 apiVersion: v1
-kind: ServiceAccount
+kind: Service
 metadata:
-  name: {{ template "jenkins.serviceAccountName" . }}
+  name: {{ template "jenkins.master-service" . }}
   namespace: {{ template "jenkins.namespace" . }}
   annotations: 
     {{- include "jenkins.commonAnnotations" . | nindent 4 }}
   labels:
     {{- include "jenkins.commonLabels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "jenkins.server.selectorLabels" . | indent 6 }}
+  type: "ClusterIP"
+  ports:
+    - port: 50000
+      targetPort: 50000
