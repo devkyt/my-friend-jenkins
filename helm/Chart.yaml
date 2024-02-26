@@ -2,7 +2,7 @@ apiVersion: v2
 name: jenkins
 description: Jenkins Helm chart for Kubernetes
 version: 0.1.0
-appVersion: 0.1.0
+appVersion: 2.443
 keywords:
   - jenkins
   - pipelines

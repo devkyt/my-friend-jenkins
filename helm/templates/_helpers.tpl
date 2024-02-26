@@ -65,12 +65,12 @@ app: {{ include "jenkins.name" . | quote }}
 {{- end -}}
 
 
-{{- define "jenkins.clusterRole" -}}
+{{- define "jenkins.Role" -}}
 {{ include "jenkins.serviceAccountName" . }}
 {{- end -}}
 
 
-{{- define "jenkins.clusterRoleBinding" -}}
+{{- define "jenkins.RoleBinding" -}}
 {{ include "jenkins.serviceAccountName" . }}
 {{- end -}}
 

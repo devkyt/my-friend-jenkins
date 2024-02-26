@@ -1,7 +1,8 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: {{ template "jenkins.clusterRole" . }}
+  name: {{ template "jenkins.Role" . }}
+  namespace: {{ template "jenkins.namespace" . }}
   annotations: 
     {{- include "jenkins.commonAnnotations" . | nindent 4 }}
   labels:
