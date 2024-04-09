@@ -4,7 +4,7 @@
 
 
 {{- define "jenkins.namespace" -}}
-{{ .Values.app.namespace | default "jenkins-ci" | quote }}
+{{ .Values.namespace | default .Values.app.namespace | quote }}
 {{- end -}}
 
 
@@ -12,7 +12,7 @@
 deployed: {{ now | date "2024-02-01" }}
 app.kubernetes.io/name: {{ include "jenkins.name" . | quote }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/version: {{ .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- with .Values.server.annotations }}
 {{- toYaml . }}
 {{- end -}}
@@ -22,7 +22,7 @@ app.kubernetes.io/version: {{ .Chart.AppVersion }}
 {{- define "jenkins.commonLabels" -}}
 helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 app.kubernetes.io/name: {{ include "jenkins.name" . | quote }}
-app.kubernetes.io/version: {{ .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}

@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: jenkins-ci
+  labels:
+    type: jenkins-slave
+spec:
+  serviceAccountName: jenkins-admin
+  containers:
+  - name: gke-toolkit
+    image: eu.gcr.io/stacktome-prod/gke-toolkit:latest 
+    tty: true
+    volumeMounts:
+      - name: docker-sock
+        mountPath: /var/run/docker.sock
+        readOnly: false
+  tolerations:
+  - key: jenkins
+    value: "true"
+    operator: Equal
+    Effect: NoSchedule
+  nodeSelector:
+    poolType: jenkins-executor
+  volumes:
+  - name: docker-sock
+    hostPath:
+      path: /var/run/docker.sock
+

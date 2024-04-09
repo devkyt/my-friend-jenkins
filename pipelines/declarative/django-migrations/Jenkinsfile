@@ -1,0 +1,103 @@
+pipeline {
+
+  agent {
+    kubernetes {
+      inheritFrom "slave"
+      defaultContainer "python"
+      yamlFile "Django.yaml"
+    }
+  }
+
+  parameters {
+        string(name: 'BRANCH', defaultValue: 'staging', description: 'Branch to use')
+        string(name: 'COMMENT', description: 'Comment message for the new migrations')
+  }
+
+  environment {
+        REPO = "github.com/org/repo.git"
+        USER = getBuildUser()
+  }
+
+  stages {
+    stage("Send Start Message") {
+      steps {
+        slackSend(color: "good", message: "Creating migrations for Django: (branch=${params.BRANCH}, msg=${params.COMMENT}, user=${USER})")
+      }
+    }
+
+
+    stage("Get Code from Repository") {
+      steps {
+        container("jnlp") {
+          withCredentials([usernamePassword(credentialsId: 'jenkins-stacktome',
+                                            usernameVariable: 'GITHUB_APP',
+                                            passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
+              checkout scmGit(
+                branches: [[name: "${params.BRANCH}"]],
+                userRemoteConfigs: [[url: "https://${GITHUB_APP}:${GITHUB_ACCESS_TOKEN}@${REPO}"]])
+          }
+        }
+      }
+    }
+
+    stage("Setup Database") {
+      steps {
+        container("db") {
+          sh """
+          psql -U postgres -c 'create database django;'
+          psql -U postgres -c \"create user django with encrypted password 'test';\"
+          psql -U postgres -c 'ALTER USER django WITH SUPERUSER;'
+          """
+        }
+      }
+    }
+
+    stage("Install Dependencies") {
+      steps {
+        sh "pip install -r requirements.txt"
+      }
+    }
+    
+    stage("Create Migrations") {
+      steps {
+        sh "yes | python manage.py makemigrations --merge"
+      }
+    }
+
+    stage("Push Migrations to Repository") {
+      steps {
+        container("jnlp") {
+          withCredentials([usernamePassword(credentialsId: 'jenkins-stacktome',
+                                            usernameVariable: 'GITHUB_APP',
+                                            passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
+          sh """
+          git add .
+          git commit -m ${COMMENT}
+          git push --set-upstream origin ${BRANCH}
+          """
+          }
+        }
+      }
+    }
+
+  }
+
+  post {
+    success {
+      slackSend(color: "good", message: "Migrations created successfully: ${env.BUILD_URL}")
+    }
+    failure {
+      slackSend(color: 'danger', message: "Failed to create migrations: ${env.BUILD_URL}")
+    }
+  }
+
+}
+
+def getBuildUser() {
+    try {
+      USER = currentBuild.rawBuild.getCause(Cause.UserIdCause).getUserId()
+      return USER
+    } catch(Exception ex) {
+      return 'Jenkins-Trigger'
+    }
+}
