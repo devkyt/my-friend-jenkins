@@ -6,9 +6,8 @@
 # Annotation <!-- omit in toc -->
 I've created this repo as a Jenkins cheat sheet for myself. Cause, god knows why, my brain isn't perfect 
 and I keep forgetting even obvious things. But at the same time, I always, like always remember the dumb jokes from "The Office" and "Rush Hour". 
-How it even works? It's a hecking mystery.
 
-So it will be really awesome if you find here something useful. 
+So, long story short, it will be really awesome if you find here something useful. 
 
 # Table of Contents <!-- omit in toc -->
 - [Deploy to Kubernetes](#deploy-to-kubernetes)
