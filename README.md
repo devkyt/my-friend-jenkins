@@ -192,20 +192,28 @@ So if you branch has a Jenkinsfile with pipeline script, Jenkins will automatica
 
 - Login to Jenkins and nn Dasboard click "Add New Item" button <br>
 <img src='./img/multibranch/01.png' width=70% style="margin: 17px">
+
 - Choose "Multibranch Pipeline" and enter a name for it <br>
 <img src='./img/multibranch/02.png' width=70% style="margin: 17px">
+
 - Fill the "Display name" and "Descriptions" fields if you want to
 <img src='./img/multibranch/03.png' width=70% style="margin: 17px">
+
 - In "Branch Sources" select GitHub <br>
 <img src='./img/multibranch/04.png' width=70% style="margin: 17px">
+
 - Choose existing GitHub App private key as a creds <br>
 <img src='./img/multibranch/05.png' width=70% style="margin: 17px">
+
 - Specify your repo URL <br>
 <img src='./img/multibranch/06.png' width=70% style="margin: 17px">
+
 - Adjust other options by your current needs <br>
 <img src='./img/multibranch/07.png' width=70% style="margin: 17px">
+
 - Leave "Build Configuration" unchanged <br>
 <img src='./img/multibranch/08.png' width=70% style="margin: 17px">
+
 - Save. If you didn't mess up, folder with your Pipelines should appear on Dashboard <br>
 <img src='./img/multibranch/09.png' width=70% style="margin: 17px">
 
