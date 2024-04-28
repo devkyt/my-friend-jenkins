@@ -48,40 +48,72 @@ It's pretty simple and self-described. Feel free not only to change the values b
 So let's do this step by step starting from scratch
 
 ### Create Github App
-For first you need to create the GitHub App. Open GitHub and navigate to Settings. From there go to Developer Settings -> GitHub App -> New GitHub App.
+First, you need to create the GitHub App. Open GitHub and navigate to Settings. From there go to Developer Settings -> GitHub App -> New GitHub App.
 
 
-Perform next actions:
+
+https://github.com/devkyt/my-friend-jenkins/assets/96535499/c6ea1e8b-f82e-4cc4-b9d3-fcd42d3de9e8
+
+
+
+Perform the next actions:
 - Fill the "App Name" and "Description" fields
-- Put your acc url on GitHub the "Homepage URL" field
+- Put your account URL on GitHub in the "Homepage URL" field
+  
+
+https://github.com/devkyt/my-friend-jenkins/assets/96535499/17a6490d-8b77-457b-bb99-cc5784efe4e5
+
+
 - Put your Jenkins instance URL with path "/github-webhook" to the "Webhook URL"
+
+
+https://github.com/devkyt/my-friend-jenkins/assets/96535499/e12199d9-bfc6-4a11-ad84-649ffb436599
+
+
 - Grant next repo permissions:
     - Administration: Read-only
     - Checks: Read & write
     - Contents: Read & write
     - Metadata: Read-only
     - Pull requests: Read-only
-- Subscribe to following events:
+- Subscribe to the following events:
     - Check run
     - Check suite
     - Pull request
     - Push
     - Repository
-- In "Where can this GitHub App be installed?" block choose:
-  - "Only on this account" if you want to install app only for the current org
+- In the "Where can this GitHub App be installed?" block choose:
+  - "Only on this account" if you want to install the app only for the current org
   - "Any account" if you want to use it elsewhere (for the multiple org maybe)
-- Click "Create GitHub App" Button 
+- Click the "Create GitHub App" Button 
+
+
 
 
 ### Generate private key for auth to the GitHub App
-Go again to the GitHub Apps in your org "Developer Settings" and press "Edit" on created app. Under Private keys, select "Generate a private key" and download the key
-
-Convert key to acceptible for Jenkins format:```openssl pkcs8 -topk8 -inform PEM -outform PEM -in github-key.pem -out converted-github-key.pem -nocrypt```
+Go again to the GitHub Apps in your org "Developer Settings" and press "Edit" on the created app. Under Private keys, select "Generate a private key" and download the key.
 
 
-### Install App to your org
-Now it's time to install app to your org. Last time, navigate to the "Edit" page for your GitHub App and choose "Install app" in the sidebar menu.
-Then Select organiztion where you wish to install App and org repos to which you grant permissions:
+https://github.com/devkyt/my-friend-jenkins/assets/96535499/8b606e55-9146-4a16-8d68-7f3afce1bf3f
+
+
+
+Convert key to acceptable for Jenkins format: ```openssl pkcs8 -topk8 -inform PEM -outform PEM -in github-key.pem -out converted-github-key.pem -nocrypt```
+
+
+
+https://github.com/devkyt/my-friend-jenkins/assets/96535499/0b88bd09-c85f-404c-a1d5-ee0c0ae0e37c
+
+
+
+
+
+
+### Install App to your account
+Now it's time to install the app to your account. Last time, navigate to the "Edit" page for your GitHub App and choose "Install app" in the sidebar menu.
+Then select the account where you wish to install the app and account repos to which you will grant permissions.
+
+https://github.com/devkyt/my-friend-jenkins/assets/96535499/b93872e1-2c95-4a96-a297-44c003c4c203
 
 
 ### Add App creds to Jenkins
