@@ -4,11 +4,11 @@
 </p>
 
 # Annotation <!-- omit in toc -->
-I've created this repo as a Jenkins cheatsheet for myself. Because for some reason my brain isn't perfect 
+I've created this repo as a Jenkins cheat sheet for myself. Cause, god knows why, my brain isn't perfect 
 and I keep forgetting even obvious things. But at the same time, I always remember all the jokes from "The Office" and "Rush Hour". 
-Why? Hecking mystery.
+How it works? It's a hecking mystery.
 
-So it will be really, like really awesome if you find in here something useful. 
+So it will be really, like really awesome if you find here something useful. 
 
 # Table of Contents <!-- omit in toc -->
 - [Deploy to Kubernetes](#deploy-to-kubernetes)
