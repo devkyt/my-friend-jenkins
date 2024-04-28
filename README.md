@@ -37,7 +37,7 @@ So it will be really, like really awesome if you find here something useful.
   - [Bind K8s service acc to GCP service acc](#bind-k8s-service-acc-to-gcp-service-acc)
 
 ## Deploy to Kubernetes
-You can use my handcrafted Helm Chart to deploy Jenkins to your cluster:
+You can use my handcrafted Helm Chart to deploy Jenkins to the cluster:
 ```sh
 helm upgrade --instal jenkins ./helm/ -f ./helm/vars.yaml --namespace=jenkins-ci
 ```
