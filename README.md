@@ -5,7 +5,8 @@
 
 # Annotation <!-- omit in toc -->
 I've created this repo as a Jenkins cheat sheet for myself. Cause, god knows why, my brain isn't perfect 
-and I keep forgetting even obvious things. But at the same time, I always, like always remember the dumb jokes from "The Office" and "Rush Hour". 
+and I keep forgetting even obvious things. But at the same time, I always, like always remember the dumb jokes from "The Office". 
+For example... Oh, heck, forgot it. 
 
 So, long story short, it will be really awesome if you find here something useful. 
 
