@@ -23,7 +23,7 @@ So it will be really, like really awesome if you find here something useful.
 - [Environment](#environment)
   - [Add global env variables](#add-global-env-variables)
   - [Set env variables in Pipeline](#set-env-variables-in-pipeline)
-- [Doing your Job](#doing-your-job)
+- [Jobs](#jobs)
   - [Basic definition](#basic-definition)
   - [Add agent manifest in YAML directly to Job](#add-agent-manifest-in-yaml-directly-to-job)
   - [Load an agent manifest from YAML](#load-an-agent-manifest-from-yaml)
@@ -270,7 +270,7 @@ pipeline {
 }
 ```
 
-## Doing your Job
+## Jobs
 ### Basic definition
 ```groovy
 pipeline {
