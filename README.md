@@ -22,16 +22,16 @@ So, long story short, it will be really awesome if you find here something usefu
 - [Environment](#environment)
   - [Add global env variables](#add-global-env-variables)
   - [Set env variables in Pipeline](#set-env-variables-in-pipeline)
-- [Pipelines](#pipelines)
+- [Jobs](#jobs)
   - [Basic definition](#basic-definition)
-  - [Add agent manifest in YAML directly to the Job](#add-agent-manifest-in-yaml-directly-to-the-job)
+  - [Add agent manifest directly to the pipeline](#add-agent-manifest-directly-to-the-pipeline)
   - [Load an agent manifest from YAML](#load-an-agent-manifest-from-yaml)
-  - [Set default container for the Job](#set-default-container-for-the-job)
-  - [Add input parametrs for the Job](#add-input-parametrs-for-the-job)
-  - [Triger Job from remote](#triger-job-from-remote)
-  - [Trigger Job on event in GitHub repo](#trigger-job-on-event-in-github-repo)
-  - [Specify action depends on the Job status](#specify-action-depends-on-the-job-status)
-- [Examples of the real-world pipelines](#real-world-job-examples)
+  - [Set default container for the pipeline](#set-default-container-for-the-pipeline)
+  - [Add input parameters for the pipeline](#add-input-parameters-for-the-pipeline)
+  - [Trigger pipeline from remote](#trigger-pipeline-from-remote)
+  - [Trigger pipeline on the event in GitHub repo](#trigger-pipeline-on-the-event-in-github-repo)
+  - [Specify action based on the pipeline's status](#specify-action-based-on-the-pipelines-status)
+- [Examples of the real-world pipelines](#examples-of-the-real-world-pipelines)
 
 ## Deploy to Kubernetes
 You can use my handcrafted Helm Chart to deploy Jenkins to the cluster:
@@ -412,12 +412,12 @@ pipeline {
 ```
 
 
-### Trigger Job from remote
+### Trigger pipeline from remote
 
 
-### Trigger Job on an event in GitHub repo
+### Trigger pipeline on the event in GitHub repo
 
-### Specify action based on the Pipeline's status
+### Specify action based on the pipeline's status
 ```groovy
 pipeline {
 
@@ -446,7 +446,7 @@ pipeline {
 
 ```
 
-## Examples of the real-world jobs
+## Examples of the real-world pipelines
 Here you find some real-world examples of the Jenkins Jobs:
   - [Deploy Angular App](./pipelines/angular-app/)
   - [Deploy Scala App](./pipelines/scala-app/)
