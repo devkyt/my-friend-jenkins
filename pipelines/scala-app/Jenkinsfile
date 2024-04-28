@@ -1,0 +1,121 @@
+pipeline {
+
+  agent {
+    kubernetes {
+      inheritFrom "slave"
+      defaultContainer "gke-toolkit"
+      yamlFile "Sbt.yaml"
+    }
+  }
+
+  parameters {
+        string(name: 'BRANCH', defaultValue: 'staging', description: 'Branch to use')
+        choice(name: 'ENVIRONMENT', choices: ['staging', 'production'], description: 'Where to deploy')
+  }
+
+  environment {
+        CLUSTER = "${params.ENVIRONMENT == 'production' ? env.PROD_CLUSTER : env.STAGING_CLUSTER}"
+        NAMESPACE = "default"
+
+        REPO = "github.com/org/reports.git"
+        PROJECT="reports"
+
+        USER = getBuildUser()
+  }
+
+  stages {
+    stage("Send Start Message") {
+      steps {
+        slackSend(color: "good", message: "Build started: ${env.BUILD_URL} (branch=${params.BRANCH}, env=${params.ENVIRONMENT}, user=${USER})")
+      }
+    }
+
+
+    stage("Get Code from Repository") {
+      steps {
+        container("jnlp") {
+          withCredentials([usernamePassword(credentialsId: 'jenkins-stacktome',
+                                            usernameVariable: 'GITHUB_APP',
+                                            passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
+              checkout scmGit(
+                branches: [[name: "${params.BRANCH}"]],
+                userRemoteConfigs: [[url: "https://${GITHUB_APP}:${GITHUB_ACCESS_TOKEN}@${REPO}"]])
+          }
+        }
+      }
+    }
+
+    stage("Build App") {
+        steps {
+          container("sbt") {
+            sh """
+            mkdir -p /home/jenkins/ivy-cache/${env.JOB_NAME}/${PROJECT}
+            printf \"\n-ivy /home/jenkins/ivy-cache/${env.JOB_NAME}/${PROJECT}\n-no-colors\" > .sbtopts
+            sbt -J-Xss256m -J-Xmx4G -no-colors ${PROJECT}/assembly
+            sbt -no-colors ${PROJECT}/version | tail -n 1 | awk '{print \$2}' > /tmp/shared/project-version
+            """
+          }
+        }
+      }
+
+
+    stage("Push Jar to GCP") {
+      steps {
+        sh """
+        gsutil cp ./${PROJECT}/target/scala-2.12/new-pipeline-${PROJECT}.jar gs://stacktome-helm-repo/spark/${PROJECT}/${params.ENVIRONMENT}/new-pipeline-${PROJECT}-v${env.BUILD_NUMBER}.jar
+        gsutil cp ./${PROJECT}/target/scala-2.12/new-pipeline-${PROJECT}.jar gs://stacktome-helm-repo/spark/${PROJECT}/${params.ENVIRONMENT}/new-pipeline-${PROJECT}-latest.jar
+        """
+      }
+    }
+    
+    stage("Connect to Cluster") {
+      steps {
+          sh "gcloud container clusters get-credentials ${CLUSTER} --zone=${GKE_ZONE}"
+      }
+    }
+
+    stage("Deploy Reports") {
+      steps {
+          sh """
+          helm upgrade --install spark-operator-${PROJECT} ./helm/spark-operator-${PROJECT} \
+          -f ./helm/spark-operator-${PROJECT}/values/${params.ENVIRONMENT}.yaml \
+          --namespace=default \
+          --set version=${env.BUILD_NUMBER} \
+          --set env=${params.ENVIRONMENT}  \
+          --wait
+          """
+      }
+    }
+
+    stage("Index Sentry Release") {
+      steps {
+          sh """
+          sentry-cli releases new -p ${PROJECT} ${env.BUILD_NUMBER} 
+          sentry-cli releases set-commits --auto ${env.BUILD_NUMBER} 
+          sentry-cli releases finalize ${env.BUILD_NUMBER}
+          sentry-cli releases deploys ${env.BUILD_NUMBER} new -e ${params.ENVIRONMENT}
+          """
+      }
+    }
+
+  }
+
+  post {
+    success {
+      slackSend(color: "good", message: "Build completed: ${env.BUILD_URL}")
+    }
+    failure {
+      slackSend(color: 'danger', message: "Build failed: ${env.BUILD_URL}")
+    }
+  }
+
+}
+
+def getBuildUser() {
+    try {
+      USER = currentBuild.rawBuild.getCause(Cause.UserIdCause).getUserId()
+      return USER
+    } catch(Exception ex) {
+      return 'jenkins'
+    }
+}

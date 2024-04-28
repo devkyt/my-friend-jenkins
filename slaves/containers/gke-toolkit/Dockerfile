@@ -22,8 +22,13 @@ RUN curl https://keybase.io/mattfarina/pgp_keys.asc | gpg --import && \
     rm -rf linux-amd64 && \
     rm -f /var/cache/apk/*
 
+ARG SENTRY_VERSION
+
+RUN curl -sL https://sentry.io/get-cli/ | SENTRY_CLI_VERSION="${SENTRY_VERSION}" sh
+
 # docker build \
 #   --build-arg HELM_VERSION=3.14.3 \
+#   --build-arg SENTRY_VERSION=2.31.0 \
 #   -t eu.gcr.io/org/gcloud-toolkit:latest .
 
 

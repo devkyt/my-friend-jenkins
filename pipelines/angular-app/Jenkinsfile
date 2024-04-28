@@ -1,0 +1,152 @@
+pipeline {
+
+  agent {
+    kubernetes {
+      inheritFrom "slave"
+      defaultContainer "gke-toolkit"
+      yamlFile "Node.yaml"
+    }
+  }
+
+  parameters {
+        string(name: 'BRANCH', defaultValue: 'staging', description: 'Branch to use')
+        choice(name: 'ENVIRONMENT', choices: ['staging', 'production'], description: 'Where to deploy')
+  }
+
+  environment {
+        CLUSTER = "${params.ENVIRONMENT == 'production' ? env.PROD_CLUSTER : env.STAGING_CLUSTER}"
+        NAMESPACE = "default"
+
+        REPO = "github.com/org/frontend.git"
+        PROJECT = "frontend"
+
+        USER = getBuildUser()
+  }
+
+  stages {
+    stage("Send Start Message") {
+      steps {
+        slackSend(color: "good", message: "Build started: ${env.BUILD_URL} (branch=${params.BRANCH}, env=${params.ENVIRONMENT}, user=${USER})")
+      }
+    }
+
+
+    stage("Get Code from Repository") {
+      steps {
+        container("jnlp") {
+          withCredentials([usernamePassword(credentialsId: 'jenkins-stacktome',
+                                            usernameVariable: 'GITHUB_APP',
+                                            passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
+              checkout scmGit(
+                branches: [[name: "${params.BRANCH}"]],
+                userRemoteConfigs: [[url: "https://${GITHUB_APP}:${GITHUB_ACCESS_TOKEN}@${REPO}"]])
+          }
+        }
+      }
+    }
+
+    stage("Build App") {
+      steps {
+        container("node") {
+          sh """
+          if [[ \$(md5sum package.json | awk '{print \$1}') = \$(md5sum /home/jenkins/tmp/front/${params.ENVIRONMENT}/package.json | awk '{print \$1}') ]];
+          then
+            tar -zxf /home/jenkins/tmp/front/${params.ENVIRONMENT}/node_modules.tar.gz -C ./
+            npm install
+          else
+            npm ci
+            mkdir -p /home/jenkins/tmp/front/${params.ENVIRONMENT}
+            cp package.json /home/jenkins/tmp/front/${params.ENVIRONMENT}/package.json
+            tar -zcf /home/jenkins/tmp/front/${params.ENVIRONMENT}/node_modules.tar.gz node_modules
+          fi
+          npm run build-${params.ENVIRONMENT}
+          """
+        }
+      }
+    }
+
+    stage("Build Frontend Image") {
+      steps {
+        sh """
+        gcloud auth configure-docker
+        docker build \
+          -t eu.gcr.io/stacktome-prod/web-frontend:${env.BUILD_NUMBER} \
+          -t eu.gcr.io/stacktome-prod/web-frontend:${params.ENVIRONMENT} \
+          -t eu.gcr.io/stacktome-prod/web-frontend:latest . 
+        docker push eu.gcr.io/stacktome-prod/web-frontend --all-tags
+        """
+      }
+    }
+
+    stage("Minfy Widget Scripts") {
+      steps {
+        container("node") {
+        sh """
+        npm i -g minify@^7.0.0
+        minify ./src/app/private/widgets/templates/scripts/script.js > ./src/app/private/widgets/templates/scripts/script.min.js
+        minify ./src/app/private/widgets/templates/scripts/widget.js > ./src/app/private/widgets/templates/scripts/widget.min.js
+        """
+        }
+      }
+    }
+
+    stage("Copy Widgets to Google Cloud Bucket") {
+      steps {
+        sh """
+        gsutil cp ./src/app/private/widgets/templates/scripts/script.min.js gs://stacktome-cdn-store/frontend/widget/${params.ENVIRONMENT}/script.js 
+        gsutil cp ./src/app/private/widgets/templates/scripts/widget.min.js gs://stacktome-cdn-store/frontend/widget/${params.ENVIRONMENT}/widget.js 
+        """
+      }
+    }
+    
+    stage("Connect to Cluster") {
+      steps {
+          sh "gcloud container clusters get-credentials ${CLUSTER} --zone=${GKE_ZONE}"
+      }
+    }
+
+    stage("Deploy Frontend") {
+      steps {
+          sh """
+          helm upgrade --install web-frontend ./helm/web-frontend \
+            -f ./helm/web-frontend/values.${params.ENVIRONMENT}.yaml \
+            --set imageTag=${env.BUILD_NUMBER} \
+            --namespace ${NAMESPACE} \
+            --wait
+          """
+      }
+    }
+
+    stage("Index Sentry Release") {
+      steps {
+          sh """
+          sentry-cli releases new -p ${PROJECT} ${env.BUILD_NUMBER} 
+          sentry-cli releases set-commits --auto ${env.BUILD_NUMBER} 
+          sentry-cli releases -p ${PROJECT} files ${env.BUILD_NUMBER} upload-sourcemaps --rewrite ./dist
+          sentry-cli releases finalize ${env.BUILD_NUMBER}
+          sentry-cli releases deploys ${env.BUILD_NUMBER} new -e ${params.ENVIRONMENT}
+          """
+      }
+    }
+
+  }
+
+  post {
+    success {
+      slackSend(color: "good", message: "Build completed: ${env.BUILD_URL}")
+    }
+    failure {
+      slackSend(color: 'danger', message: "Build failed: ${env.BUILD_URL}")
+    }
+  }
+
+}
+
+def getBuildUser() {
+    try {
+      USER = currentBuild.rawBuild.getCause(Cause.UserIdCause).getUserId()
+      return USER
+    } catch(Exception ex) {
+      return 'jenkins'
+    }
+}

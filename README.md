@@ -1,41 +1,59 @@
+<p>
+  <img src="img/header/jenkins-black.png#gh-dark-mode-only" alt="image" height="100" style="margin-bottom: 5px"/>
+  <img src="img/header/jenkins-white.png#gh-light-mode-only" alt="image" height="100" style="margin-bottom: 5px"/>
+</p>
+
 # Annotation <!-- omit in toc -->
-Stand by... Work in progress
+I've created this repo as a Jenkins cheatsheet for myself. Because for some reason my brain isn't perfect 
+and I keep forgetting even obvious things. But at the same time, I always remember all the jokes from "The Office" and "Rush Hour". 
+Why? Hecking mystery.
+
+So it will be really, like really awesome if you find in here something useful. 
 
 # Table of Contents <!-- omit in toc -->
 - [Deploy to Kubernetes](#deploy-to-kubernetes)
-- [GitHub](#github)
-  - [Authenticate with GitHub App](#authenticate-with-github-app)
-    - [Create Github App](#create-github-app)
-    - [Generate private key for auth to the GitHub App](#generate-private-key-for-auth-to-the-github-app)
-    - [Install App to your org](#install-app-to-your-org)
-    - [Add App creds to Jenkins](#add-app-creds-to-jenkins)
-    - [Access GitHub Repos from Pipeline](#access-github-repos-from-pipeline)
+- [Authenticate with GitHub App](#authenticate-with-github-app)
+  - [Create Github App](#create-github-app)
+  - [Generate private key for auth to the GitHub App](#generate-private-key-for-auth-to-the-github-app)
+  - [Install App to your org](#install-app-to-your-org)
+  - [Add App creds to Jenkins](#add-app-creds-to-jenkins)
+  - [Access GitHub Repos from Pipeline](#access-github-repos-from-pipeline)
 - [Mulitbracnh pipeline](#mulitbracnh-pipeline)
   - [Create Multibranch pipeline for GitHub private repo](#create-multibranch-pipeline-for-github-private-repo)
 - [Environment](#environment)
   - [Add global env variables](#add-global-env-variables)
   - [Set env variables in Pipeline](#set-env-variables-in-pipeline)
+- [Doing your Job](#doing-your-job)
+  - [Basic Job example](#basic-job-example)
+  - [Real world Job examples](#real-world-job-examples)
+  - [Add agent definition in YAML](#add-agent-definition-in-yaml)
+  - [Load an agent definition from YAML](#load-an-agent-definition-from-yaml)
+  - [Set default container for the Job](#set-default-container-for-the-job)
+  - [Add input parametrs for the Job](#add-input-parametrs-for-the-job)
+  - [Triger Job from remote](#triger-job-from-remote)
+  - [Trigger Job on event in GitHub repo](#trigger-job-on-event-in-github-repo)
+  - [Specify action depends on the Job status](#specify-action-depends-on-the-job-status)
 - [GCP](#gcp)
   - [Bind K8s service acc to GCP service acc](#bind-k8s-service-acc-to-gcp-service-acc)
 
-# Deploy to Kubernetes
-Use the Helm Chart from the repo
+## Deploy to Kubernetes
+You can use my handcrafted Helm Chart to deploy Jenkins to your cluster:
 ```sh
-helm upgrade --install jenkins ./helm/ -f ./helm/vars.yaml --namespace=jenkins-ci
+helm upgrade --instal jenkins ./helm/ -f ./helm/vars.yaml --namespace=jenkins-ci
 ```
+It's pretty simple and self-described. Feel free not only to change the values but also to adjust the Chart to your needs.
 
-# GitHub
+
 ## Authenticate with GitHub App
 So let's do this step by step starting from scratch
 
 ### Create Github App
-For first you need to crete GitHub App. Open "Your organizations" page on GitHub and select Settings for org. From there go to Developer Settings -> GitHub App -> New GitHub App.
+For first you need to create the GitHub App. Open GitHub and navigate to Settings. From there go to Developer Settings -> GitHub App -> New GitHub App.
+
 
 Perform next actions:
-
-
 - Fill the "App Name" and "Description" fields
-- Put your org url on GitHub the "Homepage URL" field
+- Put your acc url on GitHub the "Homepage URL" field
 - Put your Jenkins instance URL with path "/github-webhook" to the "Webhook URL"
 - Grant next repo permissions:
     - Administration: Read-only
@@ -134,11 +152,11 @@ pipeline {
 }
 ```
 
-# Mulitbracnh pipeline
+## Mulitbracnh pipeline
 Jenkins Multibranch Pipeline is quite straitforward. It is a folder of Jobs which are defined in one repo but on different branches. 
 So if you branch has a Jenkinsfile with pipeline script, Jenkins will automatically recognize it and create separate Job. 
 
-## Create Multibranch pipeline for GitHub private repo
+### Create Multibranch pipeline for GitHub private repo
 
 - Login to Jenkins and nn Dasboard click "Add New Item" button <br>
 <img src='./img/multibranch/01.png' width=70% style="margin: 17px">
@@ -159,9 +177,9 @@ So if you branch has a Jenkinsfile with pipeline script, Jenkins will automatica
 - Save. If you didn't mess up, folder with your Pipelines should appear on Dashboard <br>
 <img src='./img/multibranch/09.png' width=70% style="margin: 17px">
 
-# Environment
-## Add global env variables
-From Jenkins Dashboard go to the Manage Jenkins an then to the System. Scroll down to Global Properties. Check the Environment Variables box. 
+## Environment
+### Add global env variables
+From Jenkins Dashboard go to the Manage Jenkins an then to the System. Scroll down to the Global Properties. Check the Environment Variables box. 
 Add key and value for env and save. Now you can use your env variable in all Pipelines like this:
 ```groovy
 pipeline {
@@ -184,8 +202,8 @@ pipeline {
 }
 ```
 
-## Set env variables in Pipeline 
-You can define env vars specific to Pipeline using environment block:
+### Set env variables in Pipeline 
+You can define env vars specific to Pipeline using environment block in Job's definition:
 ```groovy
 pipeline {
 
@@ -212,9 +230,179 @@ pipeline {
 }
 ```
 
+## Doing your Job
+### Basic definition
+```groovy
+pipeline {
 
-# GCP
-## Bind K8s service acc to GCP service acc
+  agent {
+    kubernetes {
+      inheritFrom "slave"
+      yamlFile "Busybox.yaml"
+    }
+  }
+
+  stages {
+
+    stage("Write File in One Container") {
+      steps {
+        container("jnlp") {
+          sh "echo Girl From Ipanema >> music.txt"
+        }
+      }
+    }
+
+    stage("Read File in Another Container") {
+      steps {
+        container("busybox") {
+          sh "cat music.txt"
+        }
+      }
+    }
+
+  }
+}
+```
+
+### Add agent manifest in YAML directly to Job
+```groovy
+pipeline {
+
+  agent {
+    kubernetes {
+      yaml '''
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          labels:
+            app: busybox
+        spec:
+          containers:
+          - name: busybox
+            image: busybox:stable
+            command:
+            - sleep 3600
+            tty: true
+        '''
+    }
+  }
+
+  stages {
+    ...
+  }
+
+}
+```
+
+
+### Load an agent manifest from YAML
+The YAML manifest for the agent must be located in the same directory as the Jenkinsfile:
+```groovy
+pipeline {
+
+  agent {
+    kubernetes {
+      inheritFrom "slave"
+      yamlFile "Node.yaml"
+    }
+  }
+
+  stages {
+    ...
+  }
+
+}
+```
+
+
+### Set default container for the Job
+```groovy
+pipeline {
+
+  agent {
+    kubernetes {
+      inheritFrom "slave"
+      defaultContainer "gke-toolkit"
+      yamlFile "Node.yaml"
+    }
+  }
+
+  stages {
+    ...
+  }
+
+}
+```
+
+### Add input parametrs for the Job
+```groovy
+pipeline {
+
+  agent {
+    kubernetes {
+      inheritFrom "slave"
+      defaultContainer "gke-toolkit"
+      yamlFile "Node.yaml"
+    }
+  }
+
+  parameters {
+        string(name: 'BRANCH', defaultValue: 'staging', description: 'Branch to use')
+        choice(name: 'ENVIRONMENT', choices: ['staging', 'production'], description: 'Where to deploy')
+  }
+
+  stages {
+    ...
+  }
+
+}
+```
+
+
+### Triger Job from remote
+
+
+### Trigger Job on event in GitHub repo
+
+### Specify action depends on the Job status
+```groovy
+pipeline {
+
+  agent {
+    kubernetes {
+      inheritFrom "slave"
+      defaultContainer "gke-toolkit"
+      yamlFile "Node.yaml"
+    }
+  }
+
+  stages {
+    ...
+  }
+
+  post {
+    success {
+      slackSend(color: "good", message: "Build completed: ${env.BUILD_URL}")
+    }
+    failure {
+      slackSend(color: 'danger', message: "Build failed: ${env.BUILD_URL}")
+    }
+  }
+
+}
+
+```
+
+## Real world Job examples
+Here you find some real-world examples of the Jenkins Jobs:
+  - [Deploy Angular App](./pipelines/angular-app/)
+  - [Deploy Scala App](./pipelines/scala-app/)
+  - [Deploy Swagger UI](./pipelines/swagger/)
+  - [Make Django DB Migrations](./pipelines/django-migrations/)
+
+
+## GCP
+### Bind K8s service acc to GCP service acc
 Enable Workload Identity Federation for existing cluster: 
 ```sh
 gcloud container clusters update <cluster> \
