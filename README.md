@@ -15,7 +15,7 @@ So it will be really, like really awesome if you find in here something useful.
 - [Authenticate with GitHub App](#authenticate-with-github-app)
   - [Create Github App](#create-github-app)
   - [Generate private key for auth to the GitHub App](#generate-private-key-for-auth-to-the-github-app)
-  - [Install App to your org](#install-app-to-your-org)
+  - [Install App to your account](#install-app-to-your-account)
   - [Add App creds to Jenkins](#add-app-creds-to-jenkins)
   - [Access GitHub Repos from Pipeline](#access-github-repos-from-pipeline)
 - [Mulitbracnh pipeline](#mulitbracnh-pipeline)
@@ -24,15 +24,15 @@ So it will be really, like really awesome if you find in here something useful.
   - [Add global env variables](#add-global-env-variables)
   - [Set env variables in Pipeline](#set-env-variables-in-pipeline)
 - [Doing your Job](#doing-your-job)
-  - [Basic Job example](#basic-job-example)
-  - [Real world Job examples](#real-world-job-examples)
-  - [Add agent definition in YAML](#add-agent-definition-in-yaml)
-  - [Load an agent definition from YAML](#load-an-agent-definition-from-yaml)
+  - [Basic definition](#basic-definition)
+  - [Add agent manifest in YAML directly to Job](#add-agent-manifest-in-yaml-directly-to-job)
+  - [Load an agent manifest from YAML](#load-an-agent-manifest-from-yaml)
   - [Set default container for the Job](#set-default-container-for-the-job)
   - [Add input parametrs for the Job](#add-input-parametrs-for-the-job)
   - [Triger Job from remote](#triger-job-from-remote)
   - [Trigger Job on event in GitHub repo](#trigger-job-on-event-in-github-repo)
   - [Specify action depends on the Job status](#specify-action-depends-on-the-job-status)
+- [Real world Job examples](#real-world-job-examples)
 - [GCP](#gcp)
   - [Bind K8s service acc to GCP service acc](#bind-k8s-service-acc-to-gcp-service-acc)
 
@@ -45,7 +45,7 @@ It's pretty simple and self-described. Feel free not only to change the values b
 
 
 ## Authenticate with GitHub App
-So let's do this step by step starting from scratch
+So let's do this step by step starting from scratch.
 
 ### Create Github App
 First, you need to create the GitHub App. Open GitHub and navigate to Settings. From there go to Developer Settings -> GitHub App -> New GitHub App.
