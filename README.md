@@ -5,10 +5,10 @@
 
 # Annotation <!-- omit in toc -->
 I've created this repo as a Jenkins cheat sheet for myself. Cause, god knows why, my brain isn't perfect 
-and I keep forgetting even obvious things. But at the same time, I always remember all the jokes from "The Office" and "Rush Hour". 
-How it works? It's a hecking mystery.
+and I keep forgetting even obvious things. But at the same time, I always, like always remember the dumb jokes from "The Office" and "Rush Hour". 
+How it even works? It's a hecking mystery.
 
-So it will be really, like really awesome if you find here something useful. 
+So it will be really awesome if you find here something useful. 
 
 # Table of Contents <!-- omit in toc -->
 - [Deploy to Kubernetes](#deploy-to-kubernetes)
@@ -25,16 +25,14 @@ So it will be really, like really awesome if you find here something useful.
   - [Set env variables in Pipeline](#set-env-variables-in-pipeline)
 - [Jobs](#jobs)
   - [Basic definition](#basic-definition)
-  - [Add agent manifest in YAML directly to Job](#add-agent-manifest-in-yaml-directly-to-job)
+  - [Add agent manifest in YAML directly to the Job](#add-agent-manifest-in-yaml-directly-to-the-job)
   - [Load an agent manifest from YAML](#load-an-agent-manifest-from-yaml)
   - [Set default container for the Job](#set-default-container-for-the-job)
   - [Add input parametrs for the Job](#add-input-parametrs-for-the-job)
   - [Triger Job from remote](#triger-job-from-remote)
   - [Trigger Job on event in GitHub repo](#trigger-job-on-event-in-github-repo)
   - [Specify action depends on the Job status](#specify-action-depends-on-the-job-status)
-- [Real world Job examples](#real-world-job-examples)
-- [GCP](#gcp)
-  - [Bind K8s service acc to GCP service acc](#bind-k8s-service-acc-to-gcp-service-acc)
+- [Examples of the real-world jobs](#real-world-job-examples)
 
 ## Deploy to Kubernetes
 You can use my handcrafted Helm Chart to deploy Jenkins to the cluster:
@@ -52,7 +50,7 @@ First, you need to create the GitHub App. Open GitHub and navigate to Settings. 
 
 
 
-https://github.com/devkyt/my-friend-jenkins/assets/96535499/c6ea1e8b-f82e-4cc4-b9d3-fcd42d3de9e8
+https://github.com/devkyt/my-friend-jenkins/assets/96535499/87084ec9-9c13-41be-9596-409cbfbbab4a
 
 
 
@@ -61,13 +59,22 @@ Perform the next actions:
 - Put your account URL on GitHub in the "Homepage URL" field
   
 
-https://github.com/devkyt/my-friend-jenkins/assets/96535499/17a6490d-8b77-457b-bb99-cc5784efe4e5
+
+
+https://github.com/devkyt/my-friend-jenkins/assets/96535499/f1cbb504-1584-43ff-9efc-ee8a6c98f17c
+
+
+
 
 
 - Put your Jenkins instance URL with path "/github-webhook" to the "Webhook URL"
 
 
-https://github.com/devkyt/my-friend-jenkins/assets/96535499/e12199d9-bfc6-4a11-ad84-649ffb436599
+
+
+https://github.com/devkyt/my-friend-jenkins/assets/96535499/ead6cba0-aae7-4ffc-807e-3c2f996885c4
+
+
 
 
 - Grant next repo permissions:
@@ -94,7 +101,10 @@ https://github.com/devkyt/my-friend-jenkins/assets/96535499/e12199d9-bfc6-4a11-a
 Go again to the GitHub Apps in your org "Developer Settings" and press "Edit" on the created app. Under Private keys, select "Generate a private key" and download the key.
 
 
-https://github.com/devkyt/my-friend-jenkins/assets/96535499/8b606e55-9146-4a16-8d68-7f3afce1bf3f
+
+
+https://github.com/devkyt/my-friend-jenkins/assets/96535499/777e9d75-9070-449b-95c2-b09221c36603
+
 
 
 
@@ -102,8 +112,8 @@ Convert key to acceptable for Jenkins format: ```openssl pkcs8 -topk8 -inform PE
 
 
 
-https://github.com/devkyt/my-friend-jenkins/assets/96535499/0b88bd09-c85f-404c-a1d5-ee0c0ae0e37c
 
+https://github.com/devkyt/my-friend-jenkins/assets/96535499/50b09c92-7807-4ffc-b0c8-67fd8c166889
 
 
 
@@ -113,7 +123,11 @@ https://github.com/devkyt/my-friend-jenkins/assets/96535499/0b88bd09-c85f-404c-a
 Now it's time to install the app to your account. Last time, navigate to the "Edit" page for your GitHub App and choose "Install app" in the sidebar menu.
 Then select the account where you wish to install the app and account repos to which you will grant permissions.
 
-https://github.com/devkyt/my-friend-jenkins/assets/96535499/b93872e1-2c95-4a96-a297-44c003c4c203
+
+
+
+https://github.com/devkyt/my-friend-jenkins/assets/96535499/0c01bb9f-2e23-41f7-bd25-294fe59363fa
+
 
 
 ### Add App creds to Jenkins
@@ -304,7 +318,7 @@ pipeline {
 }
 ```
 
-### Add agent manifest in YAML directly to Job
+### Add agent manifest in YAML directly to the Job
 ```groovy
 pipeline {
 
@@ -433,7 +447,7 @@ pipeline {
 
 ```
 
-## Real world Job examples
+## Examples of the real-world jobs
 Here you find some real-world examples of the Jenkins Jobs:
   - [Deploy Angular App](./pipelines/angular-app/)
   - [Deploy Scala App](./pipelines/scala-app/)
@@ -441,40 +455,6 @@ Here you find some real-world examples of the Jenkins Jobs:
   - [Make Django DB Migrations](./pipelines/django-migrations/)
 
 
-## GCP
-### Bind K8s service acc to GCP service acc
-Enable Workload Identity Federation for existing cluster: 
-```sh
-gcloud container clusters update <cluster> \
-    --workload-pool=<project-id>.svc.id.goog
-```
-
-Create IAM service account:
-```sh
-gcloud iam service-accounts create <iam-service-acc-name> \
-    --project=<project-id>
-```
-
-Bind IAM service acc to role that you need:
-```sh
-gcloud projects add-iam-policy-binding <project-id> \
-    --member "serviceAccount:<iam-service-acc-name>@<project-id>.iam.gserviceaccount.com" \
-    --role "roles/container.clusterAdmin"
-```
-
-Create an IAM policy that gives Kubernetes service acc access to the IAM service acc:
-```sh
-gcloud iam service-accounts add-iam-policy-binding <iam-service-acc-name>r@<project-id>.iam.gserviceaccount.com \
-    --role roles/iam.workloadIdentityUser \
-    --member "serviceAccount:<project-id>.svc.id.goog[<namespace>/<kubernetes-service-acc-name>]"
-```
-
-Annotate the Kubernetes service acc so GKE can see the link between the service accounts
-```sh
-kubectl annotate serviceaccount jenkins-admin \
-    --namespace jenkins-ci \
-    iam.gke.io/gcp-service-account=<iam-service-acc-name>@<project-id>.iam.gserviceaccount.com
-```
 
 
 
